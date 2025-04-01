@@ -9,6 +9,7 @@ router.get('/', (req, res) => {
 		const projects = db.query('SELECT * FROM projects');
 		res.json(projects);
 	} catch (err) {
+		console.error(err);
 		res.status(500).json({ error: 'Something went wrong' });
 	}
 });
@@ -19,7 +20,7 @@ router.post('/', (req, res) => {
 		const { id, name, description } = req.body;
 
 		if (!id || !name || !description) {
-			return res.status(400).json({ error: 'Missing required fieldss' });
+			return res.status(400).json({ error: 'Missing required fields' });
 		}
 
 		db.run(
@@ -30,7 +31,7 @@ router.post('/', (req, res) => {
 		res.status(201).json({ message: 'Project created successfully' });
 	} catch (err) {
 		console.error(err);
-		res.status(500).json({ erro: 'Failed to create project' });
+		res.status(500).json({ error: 'Failed to create project' });
 	}
 });
 
@@ -90,7 +91,7 @@ router.get('/:id', (req, res) => {
 		});
 
 		if (results.length === 0) {
-			return res.status(404).json({ erro: 'Project not found' });
+			return res.status(404).json({ error: 'Project not found' });
 		}
 
 		res.json(results[0]);
