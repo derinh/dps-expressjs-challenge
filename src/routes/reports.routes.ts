@@ -39,7 +39,7 @@ router.post('/', (req, res) => {
 		}
 
 		db.run(
-			'INSERT INTO reports (id, text, projects_id) VALUES (@id, @text, @project_id)',
+			'INSERT INTO reports (id, text, project_id) VALUES (@id, @text, @project_id)',
 			{ id, text, project_id },
 		);
 
@@ -67,6 +67,43 @@ router.get('/:id', (req, res) => {
 	} catch (err) {
 		console.error(err);
 		res.status(500).json({ error: 'Failed to fetch report' });
+	}
+});
+
+//PUT to update report
+router.put('/:id', (req, res) => {
+	try {
+		const { id } = req.params;
+		const { text, project_id } = req.body;
+
+		if (!text || !project_id) {
+			return res
+				.status(400)
+				.json({ error: 'Text and project_id are required' });
+		}
+
+		// Optional: Check if the target project exists
+		const projectExists = db.query(
+			'SELECT 1 FROM projects WHERE id = @id',
+			{ id: project_id },
+		);
+		if (projectExists.length === 0) {
+			return res.status(400).json({ error: 'Project does not exist' });
+		}
+
+		const result = db.run(
+			'UPDATE reports SET text = @text, project_id = @project_id WHERE id = @id',
+			{ id, text, project_id },
+		);
+
+		if (result.changes === 0) {
+			return res.status(404).json({ error: 'Report not found' });
+		}
+
+		res.json({ message: `Report ${id} updated successfully` });
+	} catch (err) {
+		console.error(err);
+		res.status(500).json({ error: 'Failed to update report' });
 	}
 });
 
