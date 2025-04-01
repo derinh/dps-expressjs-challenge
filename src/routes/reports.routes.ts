@@ -3,6 +3,12 @@ import db from '../services/db.service';
 
 const router = Router();
 
+interface Report {
+	id: string;
+	text: string;
+	project_id: string;
+}
+
 //GET all reports
 router.get('/', (req, res) => {
 	try {
@@ -79,6 +85,33 @@ router.get('/:id', (req, res) => {
 	} catch (err) {
 		console.error(err);
 		res.status(500).json({ error: 'Failed to fetch report' });
+	}
+});
+
+//special endpoint
+router.get('/special', (req, res) => {
+	try {
+		const reports = db.query('SELECT * FROM reports') as Report[];
+
+		const qualifyingReports = reports.filter((report) => {
+			const wordCounts: { [word: string]: number } = {};
+
+			const words = report.text
+				.toLowerCase()
+				.replace(/[^\w\s]/g, '')
+				.split(/\s+/);
+
+			for (const word of words) {
+				if (!word) continue;
+				wordCounts[word] = (wordCounts[word] || 0) + 1;
+			}
+
+			return Object.values(wordCounts).some((count) => count >= 3);
+		});
+		res.json(qualifyingReports);
+	} catch (err) {
+		console.error(err);
+		res.status(500).json({ error: 'Failed to process reports' });
 	}
 });
 
