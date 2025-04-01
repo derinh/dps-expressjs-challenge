@@ -52,4 +52,32 @@ router.delete('/:id', (req, res) => {
 	}
 });
 
+//PUT
+router.put('/:id', (req, res) => {
+	try {
+		const { id } = req.params;
+		const { name, description } = req.body;
+
+		if (!name || !description) {
+			return res
+				.status(400)
+				.json({ error: 'Name and description are required' });
+		}
+
+		const result = db.run(
+			'UPDATE projects SET name = @name, description = @description WHERE id = @id',
+			{ id, name, description },
+		);
+
+		if (result.changes === 0) {
+			return res.status(404).json({ error: 'Project not found' });
+		}
+
+		res.json({ message: `Project ${id} updated successfully` });
+	} catch (err) {
+		console.error(err);
+		res.status(500).json({ error: 'Failed to update project' });
+	}
+});
+
 export default router;
