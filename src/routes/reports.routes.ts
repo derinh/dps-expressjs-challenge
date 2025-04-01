@@ -44,4 +44,22 @@ router.post('/', (req, res) => {
 	}
 });
 
+//DELETE report
+router.delete('/:id', (req, res) => {
+	try {
+		const { id } = req.params;
+
+		const result = db.run('DELETE FROM reports WHERE id = @id', { id });
+
+		if (result.changes === 0) {
+			return res.status(404).json({ error: 'Report not found' });
+		}
+
+		res.json({ message: `Report ${id} deleted successfully` });
+	} catch (err) {
+		console.error(err);
+		res.status(500).json({ error: 'Failed to delete report' });
+	}
+});
+
 export default router;
